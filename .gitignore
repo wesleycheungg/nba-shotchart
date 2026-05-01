@@ -12,6 +12,7 @@ dist/
 
 # Data files
 *.db
+!backend/db/shots.db
 *.csv
 
 # macOS

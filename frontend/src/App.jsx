@@ -31,18 +31,19 @@ export default function App() {
     async function fetchData() {
       setError(null);
       try {
+        const api = import.meta.env.VITE_API_URL;
         const [shotsRes, zonesRes, statsRes, bioRes] = await Promise.all([
-          fetch(`http://127.0.0.1:5001/api/shots?player_id=${playerId}`),
-          fetch(`http://127.0.0.1:5001/api/shots/summary?player_id=${playerId}`),
-          fetch(`http://127.0.0.1:5001/api/player/stats?player_id=${playerId}`),
-          fetch(`http://127.0.0.1:5001/api/player/bio?player_id=${playerId}`)
+          fetch(`${api}/api/shots?player_id=${playerId}`),
+          fetch(`${api}/api/shots/summary?player_id=${playerId}`),
+          fetch(`${api}/api/player/stats?player_id=${playerId}`),
+          fetch(`${api}/api/player/bio?player_id=${playerId}`)
         ]);
         setShots(await shotsRes.json());
         setZones(await zonesRes.json());
         setPlayerStats(await statsRes.json());
         setPlayerBio(await bioRes.json());
       } catch (err) {
-        setError('Make sure Flask is running on port 5001');
+        setError('Failed to load data');
       } finally {
         if (!hasFetched.current) {
           hasFetched.current = true;
