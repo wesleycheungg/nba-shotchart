@@ -1,0 +1,65 @@
+.chart-toggle {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.chart-toggle-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chart-toggle-label {
+  font-size: 0.6rem;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.toggle-btn {
+  padding: 4px 10px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  color: #999;
+  font-size: 0.7rem;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.toggle-btn:hover {
+  border-color: #999;
+  color: #1a1a1a;
+}
+
+.toggle-btn.active {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  color: #fff;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.65rem;
+  color: #999;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.chart-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}

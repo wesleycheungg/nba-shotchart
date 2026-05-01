@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NBA Shot Chart</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --made: #00e5a0;
+      --missed: #ff3c5f;
+      --text: #e8e8f0;
+      --muted: #555570;
+      --accent: #f5c518;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      color: var(--accent);
+    }
+
+    h1 span {
+      display: block;
+      font-size: 0.35em;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 24px;
+      text-align: right;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .stat-value.made { color: var(--made); }
+    .stat-value.missed { color: var(--missed); }
+    .stat-value.pct { color: var(--accent); }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .chart-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 24px;
+      position: relative;
+    }
+
+    .legend {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.made { background: var(--made); }
+    .legend-dot.missed { background: var(--missed); opacity: 0.5; }
+
+    .zone-summary {
+      width: 100%;
+      max-width: 900px;
+      margin-top: 32px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .zone-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      padding: 10px 20px;
+      background: var(--border);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .zone-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      transition: background 0.15s;
+    }
+
+    .zone-row:hover { background: var(--border); }
+    .zone-row:last-child { border-bottom: none; }
+
+    .zone-pct { color: var(--accent); font-weight: 500; }
+
+    .loading {
+      color: var(--muted);
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 40px;
+    }
+
+    .shot {
+      transition: opacity 0.1s;
+    }
+    .shot:hover { opacity: 1 !important; cursor: crosshair; }
+
+    /* Court lines */
+    .court-line { fill: none; stroke: #2a2a3e; stroke-width: 1.5; }
+    .court-fill { fill: #13131f; }
+    .paint { fill: #15151f; stroke: #2a2a3e; stroke-width: 1.5; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>
+      <span>Shot Chart</span>
+      Stephen Curry
+    </h1>
+    <div class="stats-bar" id="statsBar">
+      <div class="loading">Loading...</div>
+    </div>
+  </header>
+
+  <div class="chart-wrapper">
+    <svg id="court"></svg>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot made"></div> Made</div>
+    <div class="legend-item"><div class="legend-dot missed"></div> Missed</div>
+  </div>
+
+  <div class="zone-summary">
+    <div class="zone-header">
+      <div>Zone</div>
+      <div>Attempts</div>
+      <div>Made</div>
+      <div>FG%</div>
+    </div>
+    <div id="zoneSummary"><div class="loading" style="padding:20px">Loading zones...</div></div>
+  </div>
+
+<script>
+const WIDTH = 500;
+const HEIGHT = 470;
+const SCALE = 1.7;
+
+// NBA court is 500x470 units (half court)
+// nba_api uses coordinates where 0,0 is the basket
+// x: -250 to 250, y: -50 to 850 (roughly)
+
+const svg = d3.select('#court')
+  .attr('viewBox', `0 0 ${WIDTH} ${HEIGHT}`)
+  .attr('width', '100%')
+  .style('max-width', '860px')
+  .style('display', 'block');
+
+// Scale: shift origin so basket is centered near bottom
+const x = d => (d / 10) * SCALE + WIDTH / 2;
+const y = d => HEIGHT - 50 - (d / 10) * SCALE;
+
+function drawCourt() {
+  const g = svg.append('g').attr('class', 'court');
+
+  // Background
+  g.append('rect').attr('class', 'court-fill')
+    .attr('width', WIDTH).attr('height', HEIGHT);
+
+  // Outer boundary
+  g.append('rect').attr('class', 'court-line')
+    .attr('x', x(-250)).attr('y', y(422.5))
+    .attr('width', x(250) - x(-250))
+    .attr('height', y(-47.5) - y(422.5));
+
+  // Paint (key)
+  g.append('rect').attr('class', 'paint')
+    .attr('x', x(-80)).attr('y', y(190))
+    .attr('width', x(80) - x(-80))
+    .attr('height', y(-47.5) - y(190));
+
+  // Free throw circle
+  g.append('circle').attr('class', 'court-line')
+    .attr('cx', x(0)).attr('cy', y(190))
+    .attr('r', (60 / 10) * SCALE);
+
+  // Basket
+  g.append('circle').attr('class', 'court-line')
+    .attr('cx', x(0)).attr('cy', y(0))
+    .attr('r', (7.5 / 10) * SCALE)
+    .attr('fill', '#2a2a3e');
+
+  // Backboard
+  g.append('line').attr('class', 'court-line')
+    .attr('x1', x(-30)).attr('y1', y(-7.5))
+    .attr('x2', x(30)).attr('y2', y(-7.5));
+
+  // Three point arc
+  const arc = d3.arc()
+    .innerRadius((237.5 / 10) * SCALE)
+    .outerRadius((237.5 / 10) * SCALE)
+    .startAngle(-1.1)
+    .endAngle(1.1);
+
+  g.append('path').attr('class', 'court-line')
+    .attr('d', arc())
+    .attr('transform', `translate(${x(0)}, ${y(0)})`);
+
+  // Corner 3 lines
+  g.append('line').attr('class', 'court-line')
+    .attr('x1', x(-220)).attr('y1', y(-47.5))
+    .attr('x2', x(-220)).attr('y2', y(92.5));
+
+  g.append('line').attr('class', 'court-line')
+    .attr('x1', x(220)).attr('y1', y(-47.5))
+    .attr('x2', x(220)).attr('y2', y(92.5));
+
+  // Center court label
+  svg.append('text')
+    .attr('x', WIDTH / 2).attr('y', 22)
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#2a2a3e')
+    .attr('font-family', 'Bebas Neue, sans-serif')
+    .attr('font-size', '13px')
+    .attr('letter-spacing', '4px')
+    .text('2023 · 24 REGULAR SEASON');
+}
+
+function plotShots(shots) {
+  const made = shots.filter(s => s.shot_made === 1);
+  const missed = shots.filter(s => s.shot_made === 0);
+
+  // Draw missed first (underneath)
+  svg.selectAll('.miss')
+    .data(missed)
+    .enter()
+    .append('circle')
+    .attr('class', 'shot miss')
+    .attr('cx', d => x(d.loc_x))
+    .attr('cy', d => y(d.loc_y))
+    .attr('r', 2.5)
+    .attr('fill', '#ff3c5f')
+    .attr('opacity', 0.25);
+
+  // Draw makes on top
+  svg.selectAll('.make')
+    .data(made)
+    .enter()
+    .append('circle')
+    .attr('class', 'shot make')
+    .attr('cx', d => x(d.loc_x))
+    .attr('cy', d => y(d.loc_y))
+    .attr('r', 3)
+    .attr('fill', '#00e5a0')
+    .attr('opacity', 0.75);
+
+  // Update stats bar
+  const total = shots.length;
+  const madeCount = made.length;
+  const pct = ((madeCount / total) * 100).toFixed(1);
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat"><div class="stat-value made">${madeCount}</div><div class="stat-label">Made</div></div>
+    <div class="stat"><div class="stat-value missed">${total - madeCount}</div><div class="stat-label">Missed</div></div>
+    <div class="stat"><div class="stat-value pct">${pct}%</div><div class="stat-label">FG%</div></div>
+  `;
+}
+
+function renderZones(zones) {
+  const html = zones.map(z => `
+    <div class="zone-row">
+      <div>${z.shot_zone}</div>
+      <div>${z.attempts}</div>
+      <div>${z.made}</div>
+      <div class="zone-pct">${z.percentage}%</div>
+    </div>
+  `).join('');
+  document.getElementById('zoneSummary').innerHTML = html;
+}
+
+async function init() {
+  drawCourt();
+
+  try {
+    const [shotsRes, summaryRes] = await Promise.all([
+      fetch('http://127.0.0.1:5000/api/shots'),
+      fetch('http://127.0.0.1:5000/api/shots/summary')
+    ]);
+
+    const shots = await shotsRes.json();
+    const summary = await summaryRes.json();
+
+    plotShots(shots);
+    renderZones(summary);
+  } catch (err) {
+    document.getElementById('statsBar').innerHTML = `<div class="loading" style="color:#ff3c5f">⚠ Make sure Flask is running on port 5000</div>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>

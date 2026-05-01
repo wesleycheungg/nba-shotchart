@@ -1,0 +1,5 @@
+.stats-bar {
+  display: flex;
+  gap: 24px;
+  text-align: right;
+}

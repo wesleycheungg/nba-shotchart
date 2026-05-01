@@ -1,0 +1,90 @@
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e5e5e5 50%,
+    #f0f0f0 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-silhouette {
+  width: 120px;
+  height: 120px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.skeleton-label {
+  height: 12px;
+  width: 220px;
+}
+
+.skeleton-name {
+  height: 52px;
+  width: 340px;
+  border-radius: 4px;
+}
+
+.skeleton-stats {
+  display: flex;
+  gap: 32px;
+}
+
+.skeleton-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeleton-stat-value {
+  height: 32px;
+  width: 64px;
+}
+
+.skeleton-stat-label {
+  height: 10px;
+  width: 40px;
+}
+
+.skeleton-filter-label {
+  height: 12px;
+  width: 64px;
+}
+
+.skeleton-filter-btn {
+  height: 28px;
+  border-radius: 14px;
+}
+
+.skeleton-court {
+  width: 100%;
+  aspect-ratio: 500 / 470;
+  border-radius: 4px;
+}
+
+.skeleton-zone-header {
+  height: 36px;
+  width: 100%;
+  border-radius: 0;
+}
+
+.skeleton-zone-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  padding: 12px 20px;
+  gap: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.skeleton-zone-cell {
+  height: 14px;
+  border-radius: 4px;
+}

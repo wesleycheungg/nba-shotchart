@@ -1,0 +1,40 @@
+.zone-summary {
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 32px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.zone-summary-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  padding: 10px 20px;
+  background: #f5f5f5;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #999;
+}
+
+.zone-summary-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.8rem;
+}
+
+.zone-made {
+  color: #22c55e;
+}
+
+.zone-missed {
+  color: #e53935;
+}
+
+.zone-pct {
+  color: #1a1a1a;
+  font-weight: 600;
+}
