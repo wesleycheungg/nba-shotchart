@@ -15,8 +15,9 @@ An interactive basketball shot visualization tool built with React, D3.js, and F
 | Layer | Technology |
 |---|---|
 | Frontend | React 19, Vite, D3.js |
-| Backend | Flask, SQLite |
+| Backend | Flask, SQLite, Gunicorn |
 | Data | nba_api, pandas |
+| Hosting | Vercel (frontend), Render (backend) |
 
 ## Prerequisites
 
@@ -96,3 +97,50 @@ The app will be available at `http://localhost:5173`.
 | Kevin Durant | 201142 |
 | Luka Doncic | 1629029 |
 | Giannis Antetokounmpo | 203507 |
+
+## Deployment
+
+The app is deployed with the frontend on Vercel and the backend on Render.
+
+### Backend — Render
+
+1. Push the repo to GitHub.
+2. Create a new **Web Service** on [Render](https://render.com) pointed at the `backend/` directory.
+3. Set the following in the Render dashboard:
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `gunicorn app:app`
+   - **Environment:** Python 3
+4. After the first deploy, note the Render service URL (e.g. `https://nba-shotchart-api.onrender.com`).
+
+> The `gunicorn` package is already included in `requirements.txt`. The Flask app binds to `0.0.0.0` and Render's `PORT` env var is picked up automatically by gunicorn.
+
+### Frontend — Vercel
+
+1. Create a new project on [Vercel](https://vercel.com) pointed at the `frontend/` directory.
+2. Add the following **Environment Variable** in the Vercel project settings:
+   - `VITE_API_URL` → your Render backend URL (e.g. `https://nba-shotchart-api.onrender.com`)
+3. Deploy — Vercel auto-detects Vite and sets the build command (`npm run build`) and output directory (`dist`).
+
+### CORS
+
+The Flask backend (`backend/app.py`) restricts CORS to the Vercel frontend URL. If your Vercel URL differs, update line 6 of `app.py`:
+
+```python
+CORS(app, origins=["https://nba-shotchart.vercel.app"])
+```
+
+### Local vs. production API URL
+
+The frontend reads the API base URL from the `VITE_API_URL` environment variable:
+
+```js
+const api = import.meta.env.VITE_API_URL;
+```
+
+For local development this is set in `frontend/.env.development`:
+
+```
+VITE_API_URL=http://127.0.0.1:5001
+```
+
+For production, set `VITE_API_URL` in the Vercel environment variables dashboard — no code change needed.
