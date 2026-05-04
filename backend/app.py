@@ -3,7 +3,7 @@ from flask_cors import CORS
 import sqlite3
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://nba-shotchart.vercel.app"])
 
 def get_db():
     conn = sqlite3.connect('db/shots.db')
